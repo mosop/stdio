@@ -5,7 +5,6 @@ module Stdio
       @close_on_exec : ::Bool
       @reader : IO::FileDescriptor
       @writer : IO::FileDescriptor
-
       getter :reader, :writer
 
       def initialize(@io : ::IO::FileDescriptor)
@@ -24,23 +23,11 @@ module Stdio
         @io.close_on_exec = @close_on_exec
       end
 
-      def uncapture
+      def decapture
         return if @dup == -1
         raise "dup2() error." if ::LibC.dup2(@dup, @io.fd) == -1
         @io.close_on_exec = @close_on_exec
         @dup = -1
-      end
-    end
-
-    alias ReadersType = NamedTuple(out: IO::FileDescriptor, err: IO::FileDescriptor)
-
-    @readers : ReadersType?
-    def readers
-      @readers ||= begin
-        close_writers
-        @stdout.uncapture
-        @stderr.uncapture
-        {out: @stdout.reader, err: @stderr.reader}
       end
     end
 
@@ -50,21 +37,45 @@ module Stdio
     end
 
     def out
-      readers[:out]
+      decaptured_out
     end
 
     def err
-      readers[:err]
+      decaptured_err
     end
 
-    def close_writers
-      @stdout.writer.close
-      @stderr.writer.close
+    def out?
+      @stdout.reader
     end
 
-    def close_readers
-      @stdout.reader.close
-      @stderr.reader.close
+    def err?
+      @stderr.reader
+    end
+
+    def out!
+      @stdout.writer
+    end
+
+    def err!
+      @stderr.writer
+    end
+
+    @decaptured_out : IO::FileDescriptor?
+    def decaptured_out
+      @decaptured_out ||= begin
+        @stdout.decapture
+        @stdout.writer.close
+        @stdout.reader
+      end
+    end
+
+    @decaptured_err : IO::FileDescriptor?
+    def decaptured_err
+      @decaptured_err ||= begin
+        @stderr.decapture
+        @stderr.writer.close
+        @stderr.reader
+      end
     end
 
     def capture(&block)
@@ -73,10 +84,12 @@ module Stdio
       begin
         yield
       ensure
-        close_writers
-        close_readers
-        @stdout.uncapture
-        @stderr.uncapture
+        @stdout.decapture
+        @stderr.decapture
+        @stdout.writer.close
+        @stderr.writer.close
+        @stdout.reader.close
+        @stderr.reader.close
       end
     end
   end
