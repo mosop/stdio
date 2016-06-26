@@ -2,6 +2,8 @@
 
 A small library for capturing stdios written in Crystal.
 
+[![Build Status](https://travis-ci.org/mosop/stdio.svg?branch=master)](https://travis-ci.org/mosop/stdio)
+
 ## Installation
 
 Add this to your application's `shard.yml`:
