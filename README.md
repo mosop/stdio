@@ -1,6 +1,6 @@
 # Crystal Stdio
 
-A small library for capturing stdios written in Crystal.
+A small Crystal library for capturing standard I/O streams.
 
 [![Build Status](https://travis-ci.org/mosop/stdio.svg?branch=master)](https://travis-ci.org/mosop/stdio)
 
