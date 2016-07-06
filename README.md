@@ -19,19 +19,22 @@ dependencies:
 ```crystal
 require "stdio"
 
-out, err = Stdio.capture do |io|
+out, err, in = Stdio.capture do |io|
   STDOUT.puts ":)"
   STDERR.puts ":("
-  [io.out.gets, io.err.gets]
+  io.in.puts ":P"
+  [io.out.gets, io.err.gets, STDIN.gets]
 end
 
 puts out # prints ":)"
 puts err # prints ":("
+puts in  # prints ":P"
 ```
 
-## Development
+## Release Notes
 
-[WIP]
+* v0.1.2
+  * STDIN
 
 ## Contributing
 

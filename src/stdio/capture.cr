@@ -1,16 +1,13 @@
 module Stdio
-  class Capture
-    class Out
-      @dup : LibC::Int
-      @close_on_exec : ::Bool
+  struct Capture
+    abstract struct Io
+      @dup : LibC::Int = -1
+      @close_on_exec : Bool = true
       @reader : IO::FileDescriptor
       @writer : IO::FileDescriptor
-      getter :reader, :writer
+      getter :io, :reader, :writer
 
-      def initialize(@io : ::IO::FileDescriptor)
-        @io = io
-        @dup = -1
-        @close_on_exec = true
+      def initialize(@io : IO::FileDescriptor)
         @reader, @writer = IO.pipe
       end
 
@@ -19,7 +16,7 @@ module Stdio
         @close_on_exec = @io.close_on_exec?
         @dup = C::Lib.dup(@io.fd)
         raise "dup() error." if @dup == -1
-        @io.reopen @writer
+        reopen
         @io.close_on_exec = @close_on_exec
       end
 
@@ -31,9 +28,38 @@ module Stdio
       end
     end
 
+    struct Reader < Io
+      def reopen
+        io.reopen writer
+      end
+
+      def close
+        decapture
+        reader.close
+        writer.close
+      end
+    end
+
+    struct Writer < Io
+      def reopen
+        io.reopen reader
+      end
+
+      def close
+        decapture
+        writer.close
+        reader.close
+      end
+    end
+
     def initialize
-      @stdout = Out.new(STDOUT)
-      @stderr = Out.new(STDERR)
+      @in = Writer.new(STDIN)
+      @out = Reader.new(STDOUT)
+      @err = Reader.new(STDERR)
+    end
+
+    def in
+      @in.writer
     end
 
     def out
@@ -45,51 +71,49 @@ module Stdio
     end
 
     def out?
-      @stdout.reader
+      @out.reader
     end
 
     def err?
-      @stderr.reader
+      @err.reader
     end
 
     def out!
-      @stdout.writer
+      @out.writer
     end
 
     def err!
-      @stderr.writer
+      @err.writer
     end
 
     @decaptured_out : IO::FileDescriptor?
     def decaptured_out
       @decaptured_out ||= begin
-        @stdout.decapture
-        @stdout.writer.close
-        @stdout.reader
+        @out.decapture
+        @out.writer.close
+        @out.reader
       end
     end
 
     @decaptured_err : IO::FileDescriptor?
     def decaptured_err
       @decaptured_err ||= begin
-        @stderr.decapture
-        @stderr.writer.close
-        @stderr.reader
+        @err.decapture
+        @err.writer.close
+        @err.reader
       end
     end
 
     def capture(&block)
-      @stdout.capture
-      @stderr.capture
+      @in.capture
+      @out.capture
+      @err.capture
       begin
         yield
       ensure
-        @stdout.decapture
-        @stderr.decapture
-        @stdout.writer.close
-        @stderr.writer.close
-        @stdout.reader.close
-        @stderr.reader.close
+        @in.close
+        @out.close
+        @err.close
       end
     end
   end
