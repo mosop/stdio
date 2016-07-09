@@ -43,7 +43,7 @@ Stdio.capture do |io|
 end
 ```
 
-Why should I/Os be decaptured? Because a process easily hangs up when you send any waiting methods to the I/Os that are not decaptured.
+Why should I/Os be decaptured? Because a process easily hangs up when you send any waiting methods to I/Os that are not decaptured.
 
 To access I/Os keeping capturing and control waiting by yourself, use the `out!` and `err!` methods.
 
