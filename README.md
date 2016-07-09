@@ -39,7 +39,7 @@ The `out` and `err` methods returns *decaptured* I/Os. The type of the I/O means
 Stdio.capture do |io|
   STDOUT.puts ":)" # captured
   io.out.gets # decaptured and taken ":)\n"
-  STDOUT.puts ":X" # prints ":X", not captured
+  STDOUT.puts ":X" # ":X" is printed, not captured
 end
 ```
 
