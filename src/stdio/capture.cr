@@ -70,20 +70,12 @@ module Stdio
       decaptured_err
     end
 
-    def out?
+    def out!
       @out.reader
     end
 
-    def err?
-      @err.reader
-    end
-
-    def out!
-      @out.writer
-    end
-
     def err!
-      @err.writer
+      @err.reader
     end
 
     @decaptured_out : IO::FileDescriptor?
