@@ -33,7 +33,7 @@ puts in  # prints ":P"
 
 ## Decapturing
 
-The `out` and `err` methods returns *decaptured* I/Os. The type of the I/O means that the I/O is not capturing the standard stream any more. In other words, you can not capture the standard streams any more in the same yielded block after calling `out` or `err`.
+The `out` and `err` methods return *decaptured* I/Os. The type of the I/O means that the I/O is not capturing the standard stream any more. In other words, you can not capture the standard streams any more in the same yielded block after calling `out` or `err`.
 
 ```crystal
 Stdio.capture do |io|
