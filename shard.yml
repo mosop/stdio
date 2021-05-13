@@ -4,6 +4,6 @@ version: 0.1.4
 authors:
   - mosop
 
-crystal: 0.23.1
+crystal: '>= 0.23.1, < 2.0.0'
 
 license: MIT
